@@ -2,11 +2,13 @@
 一个简单的下拉刷新，上拉加载iOS控件。
 
 一句代码集成下拉刷新，
+
 [self.tableView addPullDownRefreshViewAutomaticallyAdjustsScrollView:NO Block:^{
        
     }];
     
 一句代码集成上拉加载更多。
+
 [self.tableView addPullUpRefreshView:^{
        
     }];
