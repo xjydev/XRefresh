@@ -17,20 +17,28 @@
 {
     self.tableView.rowHeight = 80;
     _row = 10;
-    
+    __weak UITableViewController * weakSelf = self;
     [self.tableView addPullDownRefreshViewAutomaticallyAdjustsScrollView:NO Block:^{
         _row +=5;
-        [self.tableView reloadData];
-        [self performSelector:@selector(refreshdelay) withObject:nil afterDelay:4];
+        
+        [weakSelf.tableView reloadData];
+        [weakSelf performSelector:@selector(refreshdelay) withObject:nil afterDelay:4];
     }];
     [self.tableView addPullUpRefreshView:^{
         _row +=1;
-        [self.tableView reloadData];
+        [weakSelf performSelector:@selector(increasedelay) withObject:nil afterDelay:0.1];
     }];
 }
 - (void)refreshdelay
 {
     [self.tableView stopRefresh];
+}
+- (void)increasedelay
+{
+    if (_row%2==0) {
+        [self.tableView noIncrease];
+    }
+    [self.tableView reloadData];
 }
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {

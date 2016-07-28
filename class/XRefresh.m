@@ -14,6 +14,7 @@ static NSTimeInterval const delayTime = 1;
 static NSTimeInterval const animateDurationTime = 0.3;
 static char *refreshHeadView = "xheadView";
 static char *refreshFootView = "xFootView";
+static NSString *const noIncreaseStr = @"没有更多了……";
 
 @implementation XRefreshView
 #pragma mark -- 下拉刷新
@@ -22,15 +23,22 @@ static char *refreshFootView = "xFootView";
     self = [super initWithFrame:frame];
     if (self) {
         self.titleArray =@[@"下拉刷新",@"松手刷新",@"刷新中……",@"刷新结束",@"下拉刷新"];
-        self.titleLabel = [[UILabel alloc]initWithFrame:CGRectMake(0, frame.size.height - refreshHeight, frame.size.width, 30)];
-        self.titleLabel.textAlignment = NSTextAlignmentCenter;
+        self.titleLabel = [[UILabel alloc]initWithFrame:CGRectMake(frame.size.width*0.4, frame.size.height - refreshHeight+(refreshHeight-30)/2, frame.size.width*0.6, 30)];
         [self addSubview:self.titleLabel];
+        
+        _imageView = [[UIImageView alloc]initWithFrame:CGRectMake(frame.size.width*0.4 - 44, frame.size.height - refreshHeight+20, 24, 24)];
+        [self addSubview:_imageView];
+        
         self.state = XRefreshStateEnd;
     }
     return self;
 }
 - (void)setState:(XRefreshState)state
 {
+    //没有更多的时候，状态不发生改变。
+    if (self.noIncreae) {
+        return;
+    }
     _state = state;
     self.titleLabel.text = self.titleArray[self.state];
     switch (state) {
@@ -57,12 +65,19 @@ static char *refreshFootView = "xFootView";
                 self.willStop = NO;
                 self.xRefreshHeadle();
             }
+            if (!_timer) {
+                _timer = [NSTimer scheduledTimerWithTimeInterval:0.3 target:self selector:@selector(refreshAnimation) userInfo:nil repeats:YES];
+            }
             
         }
             break;
             
         case XRefreshStateBack:
         {
+            if (_timer) {
+                [_timer invalidate];
+                _timer = nil;
+            }
         }
             break;
             
@@ -71,18 +86,26 @@ static char *refreshFootView = "xFootView";
             break;
     }
 }
+- (void)refreshAnimation{
+    static int i = 0;
+    i++;
+    _imageView.backgroundColor = [UIColor colorWithRed:i%3*0.5 green:(i+1)%3*0.5 blue:(i%2)%3*0.5 alpha:1];
+}
 - (void)xRefreshScrollViewOff:(UIScrollView *)scroll{
+    //手势没有结束前
     if (self.state < XRefreshStateDragEnd) {
-        NSLog(@"==%f==%f",scroll.contentOffset.y,scroll.contentSize.height-scroll.bounds.size.height+increaseHeight);
-        if (scroll.contentOffset.y < -self.edgeInsetTop||(scroll.contentSize.height > scroll.bounds.size.height && scroll.contentOffset.y > scroll.contentSize.height-scroll.bounds.size.height+increaseHeight)) {
+        //超过界限就是可以touchup，界线一下就是返回开始拖拽状态。
+        if (scroll.contentOffset.y < -self.edgeInsetTop||(scroll.contentOffset.y > scroll.contentSize.height-scroll.bounds.size.height+increaseHeight)) {
             if (self.state!=XRefreshStateCanTouchUp) {
                 self.state = XRefreshStateCanTouchUp;
+                NSLog(@"==%@",self.titleLabel.text);
             }
         }
         else
         {
             if (self.state!=XRefreshStateBeganDrag) {
                 self.state = XRefreshStateBeganDrag;
+                NSLog(@"==%@",self.titleLabel.text);
             }
             
         }
@@ -96,6 +119,7 @@ static char *refreshFootView = "xFootView";
         self.titleArray =@[@"上拉加载更多",@"松手加载",@"加载中……",@"加载结束",@"上拉加载更多"];
         self.titleLabel = [[UILabel alloc]initWithFrame:CGRectMake(0, 0, frame.size.width, 30)];
         self.titleLabel.textAlignment = NSTextAlignmentCenter;
+        self.titleLabel.textColor = [UIColor grayColor];
         [self addSubview:self.titleLabel];
         self.state = XRefreshStateEnd;
     }
@@ -150,7 +174,7 @@ static char *refreshFootView = "xFootView";
 - (void)addPullUpRefreshView:(XRefreshHeadle)refreshHeadle
 {
     if (!self.xfootView) {
-        self.contentInset= UIEdgeInsetsMake(self.xheadView.edgeInsetTop - refreshHeight, 0, 0, increaseHeight);
+        self.contentInset= UIEdgeInsetsMake(self.xheadView.edgeInsetTop - refreshHeight, 0, increaseHeight, 0);
         
         XRefreshView *footView = [[XRefreshView alloc]initWithIncreaseFrame:CGRectMake(0, self.contentSize.height, self.bounds.size.width, increaseHeight) ];
         footView.backgroundColor = [UIColor whiteColor];
@@ -175,14 +199,17 @@ static char *refreshFootView = "xFootView";
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSString *,id> *)change context:(void *)context
 {
     if ([keyPath isEqualToString:@"contentOffset"]) {
-        if (self.xheadView) {
+        NSLog(@"===%@",@(self.contentOffset.y));
+        if (self.xheadView && self.contentOffset.y<0) {
           [self.xheadView xRefreshScrollViewOff:self];
         }
-        
+        if (self.xfootView&&self.contentOffset.y>(self.contentSize.height - self.frame.size.height)) {
+            [self.xfootView xRefreshScrollViewOff:self];
+        }
         
     }else if ([keyPath isEqualToString:@"state"])
     {
-        if ([change[NSKeyValueChangeOldKey]integerValue] == 1&&[change[NSKeyValueChangeNewKey]integerValue]==2) {
+        if ([change[NSKeyValueChangeOldKey]integerValue] == UIGestureRecognizerStateBegan&&[change[NSKeyValueChangeNewKey]integerValue]==UIGestureRecognizerStateChanged) {
             //开始滑动
             if (self.xheadView) {
                self.xheadView.state = XRefreshStateBeganDrag;
@@ -194,14 +221,15 @@ static char *refreshFootView = "xFootView";
             
         }
         else
-            if ([change[NSKeyValueChangeOldKey]integerValue] == 2&&[change[NSKeyValueChangeNewKey]integerValue]==3) {
+            if ([change[NSKeyValueChangeOldKey]integerValue] == UIGestureRecognizerStateChanged&&[change[NSKeyValueChangeNewKey]integerValue]>=UIGestureRecognizerStateEnded) {
                 //松开手势
                 if (self.contentOffset.y < -self.xheadView.edgeInsetTop) {
+                    self.contentInset = UIEdgeInsetsMake(-self.contentOffset.y, 0, self.contentInset.bottom, 0) ;
                     [self startRefresh];
                     
                 }
                 else
-                    if (self.contentOffset.y > (self.contentSize.height-self.bounds.size.height+increaseHeight/2)) {
+                    if (self.contentOffset.y > self.contentSize.height-self.bounds.size.height+increaseHeight && !self.xfootView.noIncreae) {
                         [self startIncrease];
                     }
                 
@@ -214,24 +242,25 @@ static char *refreshFootView = "xFootView";
             }
         }
 }
-- (void)timeToBack:(XRefreshView *)view
+//加载结束返回原来的位置。
+- (void)goBackSite
 {
-    [self goBackSite:view];
-}
-- (void)goBackSite:(XRefreshView *)refreshView
-{
-    if (refreshView.willStop == YES) {
-        refreshView.state = XRefreshStateBack;
+    
+    if (self.xheadView.willStop == YES) {
+        self.xheadView.state = XRefreshStateBack;
         [UIView animateWithDuration:animateDurationTime animations:^{
-            self.contentInset = UIEdgeInsetsMake(refreshView.edgeInsetTop - refreshHeight, 0, 0, 0);
+            self.contentInset = UIEdgeInsetsMake(self.xheadView.edgeInsetTop - refreshHeight, 0, self.contentInset.bottom, 0);
         }completion:^(BOOL finished) {
-            refreshView.state = XRefreshStateEnd;
-            refreshView.willStop = NO;
+            self.xheadView.state = XRefreshStateEnd;
+            self.xheadView.willStop = NO;
         }];
     }
     else
     {
-        refreshView.willStop = YES;
+        self.xheadView.willStop = YES;
+    }
+    if (self.xfootView.state != XRefreshStateEnd) {
+        self.xfootView.state = XRefreshStateEnd;
     }
     
 }
@@ -239,26 +268,31 @@ static char *refreshFootView = "xFootView";
 - (void)startRefresh
 {
     self.xheadView.state = XRefreshStateDragEnd;
-   
-    [UIView animateWithDuration:animateDurationTime animations:^{
-        self.contentInset = UIEdgeInsetsMake(self.xheadView.edgeInsetTop, self.contentInset.left, self.contentInset.bottom, self.contentInset.right);
+    //如果刷新了界面那么就再次可以加载更多了
+    if (self.xfootView) {
+        self.xfootView.noIncreae = NO;
+    }
+    NSLog(@"===%@==%@",@(self.xheadView.state),@(self.contentInset.top));
+    [UIView animateWithDuration:0 animations:^{
+        self.contentInset = UIEdgeInsetsMake(self.xheadView.edgeInsetTop, 0, self.contentInset.bottom, 0);
     }completion:^(BOOL finished) {
-        [self performSelector:@selector(timeToBack:) withObject:self.xheadView afterDelay:delayTime];
+        [self performSelector:@selector(goBackSite) withObject:self.xheadView afterDelay:delayTime];
     }];
     
 }
 - (void)stopRefresh{
     
-    [self goBackSite:self.xheadView];
+    [self goBackSite];
 }
 - (void)startIncrease
 {
     self.xfootView.state = XRefreshStateDragEnd;
     
 }
-- (void)endIncrease
+- (void)noIncrease
 {
-    self.xfootView.titleLabel.text = @"没有更多了……";
+    self.xfootView.noIncreae = YES;
+    self.xfootView.titleLabel.text = noIncreaseStr;
 }
 - (void)dealloc
 {
@@ -273,17 +307,6 @@ static char *refreshFootView = "xFootView";
     
     
 }
-//- (void)willMoveToSuperview:(UIView *)newSuperview
-//{
-//    if (self.xfootView) {
-//        [self removeObserver:self forKeyPath:@"contentSize"];
-//    }
-//    if (self.xheadView) {
-//        [self removeObserver:self forKeyPath:@"contentOffset"];
-//        [self.panGestureRecognizer removeObserver:self forKeyPath:@"state"];
-//    }
-//    
-//}
 
 
 @end

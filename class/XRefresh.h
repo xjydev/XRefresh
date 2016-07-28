@@ -1,11 +1,11 @@
 //
 //  XRefresh.h
 //  ObjectCDemo
-//
+//  Version 1.1.0
 //  Created by XiaoJingYuan on 5/23/16.
 //  Copyright © 2016 XiaoJingYuan. All rights reserved.
 //
-
+#import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 typedef NS_ENUM(NSInteger, XRefreshState) {
     XRefreshStateBeganDrag = 0,     // 开始拉。
@@ -18,11 +18,23 @@ typedef NS_ENUM(NSInteger, XRefreshState) {
 typedef void (^XRefreshHeadle)(void);
 //下拉刷新的头视图。
 @interface XRefreshView : UIView
+{
+    NSTimer    * _timer;
+}
 @property (nonatomic, strong)UILabel   *titleLabel;
+@property (nonatomic, strong)UIActivityIndicatorView *activityIndicatorView;
+@property (nonatomic, strong)UIImageView *imageView;
 @property (nonatomic, copy)XRefreshHeadle xRefreshHeadle;
 @property (nonatomic, assign)CGFloat  edgeInsetTop;
 @property (nonatomic, assign)XRefreshState    state;
+/**
+ *  下拉刷新，他判断是否符合返回条件。保证最低停留时间。Yes即将停止加载，再次触发就停止加载。
+ */
 @property (nonatomic, assign)BOOL    willStop;
+/**
+ *  判断上拉提示语，是否需要改变，是否可以加载更多。默认NO是可以加载更多。Yes停止加载。
+ */
+@property (nonatomic, assign)BOOL    noIncreae;
 //上面显示标题的数组，和状态相对应。
 @property (nonatomic, strong)NSArray     *titleArray;
 - (instancetype)initWithIncreaseFrame:(CGRect)frame;
@@ -55,7 +67,7 @@ typedef void (^XRefreshHeadle)(void);
 /**
  *  已经没有更多了，结束上拉增加价更多。
  */
-- (void)endIncrease;
+- (void)noIncrease;
 
 @property (nonatomic, strong)XRefreshView  *xheadView;
 @property (nonatomic, strong)XRefreshView  *xfootView;
