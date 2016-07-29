@@ -95,8 +95,8 @@ static NSString *const noIncreaseStr = @"没有更多了……";
     //手势没有结束前
     if (self.state < XRefreshStateDragEnd) {
         //超过界限就是可以touchup，界线一下就是返回开始拖拽状态。
-        if (scroll.contentOffset.y < -self.edgeInsetTop||(scroll.contentOffset.y > scroll.contentSize.height-scroll.bounds.size.height+increaseHeight)) {
-            if (self.state!=XRefreshStateCanTouchUp) {
+        if (scroll.contentOffset.y < -self.edgeInsetTop||(scroll.contentOffset.y > (scroll.contentSize.height-(scroll.bounds.size.height - scroll.contentInset.bottom)))) {
+            if (self.state == XRefreshStateBeganDrag) {
                 self.state = XRefreshStateCanTouchUp;
             }
         }
@@ -291,6 +291,9 @@ static NSString *const noIncreaseStr = @"没有更多了……";
 - (void)stopRefresh{
     
     [self goBackSite];
+    if (self.xfootView) {
+        self.xfootView.state = XRefreshStateEnd;
+    }
 }
 - (void)startIncrease
 {
@@ -300,6 +303,7 @@ static NSString *const noIncreaseStr = @"没有更多了……";
 - (void)noIncrease
 {
     self.xfootView.noIncreae = YES;
+    self.xfootView.state = XRefreshStateEnd;
     self.xfootView.titleLabel.text = noIncreaseStr;
 }
 - (void)dealloc

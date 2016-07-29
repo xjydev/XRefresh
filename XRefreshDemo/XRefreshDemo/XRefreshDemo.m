@@ -23,11 +23,11 @@
         _row +=5;
         
         [weakSelf.tableView reloadData];
-        [weakSelf performSelector:@selector(refreshdelay) withObject:nil afterDelay:4];
+        [weakSelf performSelector:@selector(refreshdelay) withObject:nil afterDelay:0.1];
     }];
     [self.tableView addPullUpRefreshView:^{
         _row +=1;
-        [weakSelf performSelector:@selector(increasedelay) withObject:nil afterDelay:0.1];
+        [weakSelf performSelector:@selector(increasedelay) withObject:nil afterDelay:4];
     }];
 }
 - (void)refreshdelay
@@ -36,8 +36,12 @@
 }
 - (void)increasedelay
 {
-    if (_row%2==0) {
+    if (_row%4==0) {
         [self.tableView noIncrease];
+    }
+    else
+    {
+       [self.tableView stopRefresh]; 
     }
     [self.tableView reloadData];
 }

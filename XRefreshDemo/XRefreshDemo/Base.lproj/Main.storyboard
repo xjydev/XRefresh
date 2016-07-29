@@ -40,7 +40,21 @@
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="0OR-Qs-gZn" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="338" y="717"/>
+            <point key="canvasLocation" x="182" y="1021"/>
+        </scene>
+        <!--Tab Bar Controller-->
+        <scene sceneID="tis-NT-mXX">
+            <objects>
+                <tabBarController id="Sbu-PW-cow" sceneMemberID="viewController">
+                    <tabBar key="tabBar" contentMode="scaleToFill" id="8Az-qk-9e6">
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="49"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                    </tabBar>
+                </tabBarController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="IIb-KY-OZe" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-466" y="207"/>
         </scene>
         <!--Root View Controller-->
         <scene sceneID="S2z-Eo-7mb">
@@ -80,10 +94,11 @@
             </objects>
             <point key="canvasLocation" x="468" y="176"/>
         </scene>
-        <!--Navigation Controller-->
+        <!--Item-->
         <scene sceneID="IVs-gu-vvV">
             <objects>
                 <navigationController id="mG9-Bt-hvz" sceneMemberID="viewController">
+                    <tabBarItem key="tabBarItem" title="Item" id="Y9n-G9-qSk"/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="EDu-t3-6NX">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
