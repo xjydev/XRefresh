@@ -3,7 +3,7 @@
 Pod::Spec.new do |s|
 
   s.name         = "XRefresh"
-  s.version      = "1.1.1"
+  s.version      = "1.1.2"
   s.summary      = "一个简单易用的下拉刷新，上拉加载iOS控件"
 
 
