@@ -15,10 +15,11 @@
 }
 - (void)viewDidLoad
 {
+    
     self.tableView.rowHeight = 80;
     _row = 10;
     __weak UITableViewController * weakSelf = self;
-    [self.tableView addPullDownRefreshViewAutomaticallyAdjustsScrollView:NO Block:^{
+    [self.tableView addPullDownRefreshViewAutomaticallyAdjustsScrollView:YES Block:^{
         _row +=5;
         
         [weakSelf.tableView reloadData];

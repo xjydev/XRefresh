@@ -98,14 +98,12 @@ static NSString *const noIncreaseStr = @"没有更多了……";
         if (scroll.contentOffset.y < -self.edgeInsetTop||(scroll.contentOffset.y > scroll.contentSize.height-scroll.bounds.size.height+increaseHeight)) {
             if (self.state!=XRefreshStateCanTouchUp) {
                 self.state = XRefreshStateCanTouchUp;
-                NSLog(@"==%@",self.titleLabel.text);
             }
         }
         else
         {
             if (self.state!=XRefreshStateBeganDrag) {
                 self.state = XRefreshStateBeganDrag;
-                NSLog(@"==%@",self.titleLabel.text);
             }
             
         }
@@ -199,9 +197,19 @@ static NSString *const noIncreaseStr = @"没有更多了……";
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSString *,id> *)change context:(void *)context
 {
     if ([keyPath isEqualToString:@"contentOffset"]) {
-        NSLog(@"===%@",@(self.contentOffset.y));
+        
         if (self.xheadView && self.contentOffset.y<0) {
-          [self.xheadView xRefreshScrollViewOff:self];
+          //如果还没有拖拽就发生偏移错误，就进行修正。
+            if (self.xheadView.state == XRefreshStateEnd) {
+                if (self.contentInset.top > self.xheadView.edgeInsetTop - refreshHeight) {
+                    self.contentInset = UIEdgeInsetsMake(self.xheadView.edgeInsetTop - refreshHeight, 0, self.contentInset.bottom, 0);
+                    self.contentOffset = CGPointMake(0, -(self.xheadView.edgeInsetTop - refreshHeight));
+                }
+            }
+            else
+            {
+                [self.xheadView xRefreshScrollViewOff:self];
+            }
         }
         if (self.xfootView&&self.contentOffset.y>(self.contentSize.height - self.frame.size.height)) {
             [self.xfootView xRefreshScrollViewOff:self];
@@ -272,7 +280,7 @@ static NSString *const noIncreaseStr = @"没有更多了……";
     if (self.xfootView) {
         self.xfootView.noIncreae = NO;
     }
-    NSLog(@"===%@==%@",@(self.xheadView.state),@(self.contentInset.top));
+    
     [UIView animateWithDuration:0 animations:^{
         self.contentInset = UIEdgeInsetsMake(self.xheadView.edgeInsetTop, 0, self.contentInset.bottom, 0);
     }completion:^(BOOL finished) {

@@ -2,9 +2,9 @@
 
 Pod::Spec.new do |s|
 
-  s.name         = "XRfresh"
-  s.version      = "1.1.0"
-  s.summary      = "一个简单的下拉刷新，上拉加载iOS控件"
+  s.name         = "XRefresh"
+  s.version      = "1.1.1"
+  s.summary      = "一个简单易用的下拉刷新，上拉加载iOS控件"
 
 
   s.description  = <<-DESC

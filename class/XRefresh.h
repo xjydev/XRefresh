@@ -1,7 +1,7 @@
 //
 //  XRefresh.h
 //  ObjectCDemo
-//  Version 1.1.0
+//  Version 1.1.1
 //  Created by XiaoJingYuan on 5/23/16.
 //  Copyright © 2016 XiaoJingYuan. All rights reserved.
 //
