@@ -22,8 +22,11 @@
     [self.tableView addPullDownRefreshViewAutomaticallyAdjustsScrollView:YES Block:^{
         _row +=5;
         
-        [weakSelf.tableView reloadData];
-        [weakSelf performSelector:@selector(refreshdelay) withObject:nil afterDelay:0.1];
+        
+        
+//        [weakSelf.tableView reloadData];不要在这里写这个，reloadData后会变成偏移-64
+        
+        [weakSelf performSelector:@selector(refreshdelay) withObject:nil afterDelay:4];
     }];
     [self.tableView addPullUpRefreshView:^{
         _row +=1;
@@ -32,16 +35,20 @@
 }
 - (void)refreshdelay
 {
+    [self.tableView reloadData];
     [self.tableView stopRefresh];
+    
 }
 - (void)increasedelay
 {
     if (_row%4==0) {
+        [self.tableView reloadData];
         [self.tableView noIncrease];
     }
     else
     {
-       [self.tableView stopRefresh]; 
+       [self.tableView stopRefresh];
+        [self.tableView reloadData];
     }
     [self.tableView reloadData];
 }
